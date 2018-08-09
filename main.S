@@ -498,7 +498,7 @@ main:
 	/* Configure Port C inputs */
 	ldi r16, 0xff	/* 1111 1111 */
 	out IO_PORTC, r16
-	ldi r16, 0x30	/* 0000 0000 */
+	ldi r16, 0x00	/* 0000 0000 */
 	out IO_DDRC, r16
 
 	/* Configure Jumpers as inputs with pull-ups. 
