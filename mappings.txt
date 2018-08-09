@@ -1,5 +1,5 @@
 snes2wii version 1.3cg (for common ground button boards)
-(C) 2007-2013 Raphaël Assénat <raph@raphnet.net>
+(C) 2007-2013 RaphaÃ«l AssÃ©nat <raph@raphnet.net>
 Source code released under the GPL license. See
 http://www.raphnet.net/electronique/x2wii/index_en.php
 modification by Alistair Brugsch github/abrugsch
@@ -25,19 +25,19 @@ swapped by holding A and B down at power up.
 -------------------------
 
 Snes style common ground controller:
-- Snes Start -> PC4 -> Gamecube Start
-- Snes Select -> PC5 -> Gamecube Z
-- Snes Left,Right,Up,Down -> Gamecube Left,Right,Up,Down
+- Start -> PC4 -> Gamecube Start
+- Select -> PC5 -> Gamecube Z
+-Left,Right,Up,Down -> Gamecube Left,Right,Up,Down
   + Up -> PC3
   + Down -> PC2
   + Left -> PC1
   + Right -> PC0
-- Snes Y -> PC6 -> Gamecube Y
-- Snes X -> PD6 -> Gamecube X
-- Snes B -> PC7 -> Gamecube B
-- Snes A -> PD7 -> Gamecube A
-- Snes L -> PD5 -> Gamecube L
-- Snes R -> PD4 -> Gamecube R
+- Y -> PC6 -> Gamecube Y
+- X -> PD6 -> Gamecube X
+- B -> PC7 -> Gamecube B
+- A -> PD7 -> Gamecube A
+- L -> PD5 -> Gamecube L
+- R -> PD4 -> Gamecube R
 
 Notice the only peculiarity is that the Snes SELECT button is 
 mapped to the Gamecube's Z button. There's no select button on a
