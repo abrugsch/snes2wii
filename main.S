@@ -221,6 +221,9 @@ interrupt_done:
 #elif defined(__AVR_ATmega168__)
 	ldi r19, 0x01
 	out IO_EIFR, r19
+#elif defined(__AVR_ATmega328__)
+	ldi r19, 0x01
+	out IO_EIFR, r19
 #else
 #error MCU not supported
 #endif
@@ -463,23 +466,28 @@ stbdly1:
 
 	ret
 
-	/*  -- PORTC --
-	 * 7: NC
-	 * 6: NC
-	 * 5: SNES Clock out
-	 * 4: SNES Latch out
+	/*  -- PORTC -- SNES style discrete button main block
+	 * 7: B in; NC
+	 * 6: Y in; NC
+	 * 5: Sel in; SNES Clock out
+	 * 4: Start in; SNES Latch out
 
-	 * 3: Snes Data in
-	 * 2: NC
-	 * 1: NC
-	 * 0: NC
+	 * 3: Up in; Snes Data in
+	 * 2: Down in; NC
+	 * 1: Left in; NC
+	 * 0: Right in; NC
 	 *
 	 * -- PORTB --
 	 * 0: Jumpers common
 	 * 1: JP0 
 	 * 2: JP1
 	 *
-	 * -- PORTD --
+	 * -- PORTD -- Now with remainder of SNES discrete buttons
+	 * 7: A
+	 * 6: X
+	 * 5: L
+	 * 4: R
+	 * 3: nc
 	 * 2: Int0 (GC Data In (simulated open collector by toggling direction))
 	 * 1: NC or Shorted with 0
 	 * 0: Debug bit
@@ -487,12 +495,10 @@ stbdly1:
 main:
 	clr r0
 
-	/* Configure Latch and Clock as outputs and
-	   enable pull-ups on inputs/unused pins, 
-	   data normally high, latch normally low */
-	ldi r16, 0xef	/* 1110 1111 */
+	/* Configure Port C inputs */
+	ldi r16, 0xff	/* 1111 1111 */
 	out IO_PORTC, r16
-	ldi r16, 0x30	/* 0011 0000 */
+	ldi r16, 0x30	/* 0000 0000 */
 	out IO_DDRC, r16
 
 	/* Configure Jumpers as inputs with pull-ups. 
@@ -520,6 +526,11 @@ main:
 	ldi r16, 0x40	/* INT0 set */
 	out IO_GICR, r16
 #elif defined(__AVR_ATmega168__)
+	ldi r16, 0x02   /* Setupt falling edge */
+	sts EICRA, r16
+	ldi r16, 0x01   /* INT0 set */
+	out IO_EIMSK, r16
+#elif defined(__AVR_ATmega328__)
 	ldi r16, 0x02   /* Setupt falling edge */
 	sts EICRA, r16
 	ldi r16, 0x01   /* INT0 set */
@@ -766,7 +777,7 @@ no_a_b_swap:
 	 * into the r4 and r5 registers.
 	 *******************************************************/
 readSnes:
-	push r17 ; for r8bits which uses it
+	;push r17 ; for r8bits which uses it
 
 	/* Latch the buttons output into the shift register */
 	sbi IO_PORTC, LATCH_BIT
@@ -775,13 +786,15 @@ readSnes:
 	cbi IO_PORTC, LATCH_BIT
 	rcall delay_6us
 	
-	/* Generate 8 clock pulses, reading data on the falling edge */
-	rcall r8bits
-	mov r4, r18
-	rcall r8bits
-	mov r5, r18
+	read input pins directly
+	in r16, IO_PINC
+	mov r4, r16
+	in r16, IO_PIND
+	/*need to mask off lower 4 bits with 1's*/
+	ori r16, 0x0f
+	mov r5, r16
 
-	pop r17
+	;pop r17
 	ret
 
 	/*****************************************************
