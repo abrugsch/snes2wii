@@ -1,0 +1,55 @@
+CC=avr-gcc
+AS=$(CC)
+LD=$(CC)
+
+NAME=snes2wii.m328
+CPU=atmega328
+CFLAGS=-Wall -mmcu=$(CPU)
+LDFLAGS=-mmcu=$(CPU) -Wl,-Map=$(NAME).map
+
+OBJS=main.o
+
+all: $(NAME).hex
+
+clean:
+	rm -f $(NAME).elf $(NAME).hex $(OBJS)
+
+$(NAME).elf: $(OBJS)
+	$(LD) $(OBJS) $(LDFLAGS) -o $(NAME).elf
+
+$(NAME).hex: $(NAME).elf
+	avr-objcopy -j .data -j .text -O ihex $(NAME).elf $(NAME).hex
+	avr-size $(NAME).elf
+
+EFUSE=0x01
+LFUSE=0xD7
+# 7 : CKDIV8
+# 6 : CKOUT
+# 5 : SUT1
+# 4 : SUT0
+# 3 : CKSEL3
+# 2 : CKSEL2
+# 1 : CKSEL1
+# 0 : CKSEL0
+
+HFUSE=0xDC
+# 7 : RSTDISBL     1
+# 6 : DWEN         1
+# 5 : SPIEN        0
+# 4 : WDTON        1
+# 3 : EESAVE       1
+# 2 : BODLEVEL2    1  (100 : 4.1 - 4.5, 101 : 2.5 - 2.9)
+# 1 : BODLEVEL1    0
+# 0 : BODLEVEL0    0
+
+erase:
+	avrdude -p m328 -P usb -c avrispmkII -e -B 20.0
+
+fuse:
+	avrdude -p m328 -P usb -c avrispmkII -Uhfuse:w:$(HFUSE):m -Ulfuse:w:$(LFUSE):m -Uefuse:w:$(EFUSE):m -B 20.0
+
+flash: $(NAME).hex
+	avrdude -p m328 -P usb -c avrispmkII -Uflash:w:$(NAME).hex -B 1.0
+
+%.o: %.S
+	$(CC) $(CFLAGS) -c $<
